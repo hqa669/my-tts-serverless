@@ -1,19 +1,17 @@
-# Dockerfile
-FROM python:3.10-slim
+# Use an official Python runtime as the base image
+FROM python:3.9-slim
 
+# Set the working directory in the container
 WORKDIR /app
 
-COPY handler.py /app/handler.py
+# Copy the current directory contents into the container
+COPY . /app
 
-# Install any dependencies if needed; for echo example, none.
-# RUN pip install ...
+# Install any needed packages specified in requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Run a simple WSGI server — Runpod expects your container to listen on an HTTP port:
-# For simplicity, use an extremely minimal Flask app that wraps the handler.
-RUN pip install flask
+# Make port 8080 available to the world outside this container
+EXPOSE 8080
 
-COPY run_server.py /app/run_server.py
-
-EXPOSE 80
-CMD ["python", "run_server.py"]
-
+# Run the application
+CMD ["python", "sentiment_analysis.py"]
