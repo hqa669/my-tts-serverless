@@ -1,19 +1,27 @@
-# handler.py
+import runpod
+from transformers import pipeline
 
-import json
 
-def handler(event, context):
-    """
-    Runpod Serverless handler.
-    Assumes 'event' is a dict containing a JSON-like payload.
-    For queue-based endpoints: 'event' will likely have key 'input'.
-    """
-    # For example, echoing back all input
-    input_data = event.get("input", {})
-    result = {
-        "echo": input_data
-    }
-    return {
-        "statusCode": 200,
-        "body": json.dumps(result),
-    }
+def load_model():
+    return pipeline(
+        "sentiment-analysis", model="distilbert-base-uncased-finetuned-sst-2-english"
+    )
+
+
+def sentiment_analysis_handler(event):
+    global model
+
+    if "model" not in globals():
+        model = load_model()
+
+    text = event["input"].get("text")
+
+    if not text:
+        return {"error": "No text provided for analysis."}
+
+    result = model(text)[0]
+
+    return {"sentiment": result["label"], "score": float(result["score"])}
+
+
+runpod.serverless.start({"handler": sentiment_analysis_handler})
